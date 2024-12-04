@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 
-
+# print(os.environ.get('CUDA_VISIBLE_DEVICES'))
 # get model and tokenizer
 def get_inference_model(model_dir):
     inference_tokenizer = AutoTokenizer.from_pretrained(model_dir, trust_remote_code=True)
@@ -25,6 +25,8 @@ def get_inference_model_llama(model_dir):
 def get_inference_model_mistral(model_dir):
     inference_model = AutoModelForCausalLM.from_pretrained(model_dir, trust_remote_code=True, torch_dtype=torch.bfloat16)
     inference_tokenizer = AutoTokenizer.from_pretrained(model_dir, trust_remote_code=True)
+    if inference_tokenizer.pad_token is None:
+        inference_tokenizer.pad_token = inference_tokenizer.eos_token
     # inference_tokenizer.pad_token = inference_tokenizer.eos_token
     device = "cuda"
     inference_model.to(device)

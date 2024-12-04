@@ -30,7 +30,7 @@ def run(arguments):
         data = data_list[i]['content']
         answer = data_list[i]['answer']
         if arguments.mode == 'cot':
-            Task = CoT_Task(data, arguments.propose_method, arguments.value_method, arguments.temperature, evaluate=arguments.evaluate)
+            Task = CoT_Task(data, arguments.propose_method, arguments.value_method, arguments.temperature, evaluate=arguments.evaluate, lang=arguments.lang)
             if arguments.consistency:
                 outputs = []
                 for cnt in range(3):
@@ -44,7 +44,7 @@ def run(arguments):
             Task = ToT_Task(data, arguments.propose_method, arguments.value_method, arguments.algorithm,
                             arguments.branch, arguments.select_branch, arguments.max_depth, arguments.end_gate,
                             arguments.select_method, arguments.temperature, use_case_prompt=arguments.use_case_prompt,
-                            low=arguments.low, high=arguments.high, evaluate=arguments.evaluate)
+                            low=arguments.low, high=arguments.high, evaluate=arguments.evaluate, lang=arguments.lang)
             output, root = Task.run()
             if arguments.visualize:
                 visualize(root, Task, arguments.task_name, arguments.file, i + 1)
@@ -53,7 +53,7 @@ def run(arguments):
                              arguments.roll_policy, arguments.roll_branch, arguments.roll_forward_steps, arguments.time_limit,
                              arguments.iteration_limit, arguments.exploration_constant, arguments.alpha, arguments.inf,
                              arguments.temperature, use_case_prompt=arguments.use_case_prompt, use_reflection=arguments.use_reflection,
-                             low=arguments.low, high=arguments.high, evaluate=arguments.evaluate)
+                             low=arguments.low, high=arguments.high, evaluate=arguments.evaluate, lang=arguments.lang)
             output, root = Task.run()
             if arguments.visualize:
                 visualize(root, Task, arguments.task_name, arguments.file, i + 1)
@@ -89,7 +89,7 @@ def parse_args():
     base_args = argparse.ArgumentParser()
     base_args.add_argument('--task_name', type=str, default='scibench')
     base_args.add_argument('--file', type=str, default='thermo_standardized')  # json
-    base_args.add_argument('--propose_method', type=str, choices=['gpt', 'glm', 'llama', 'local'], default='glm')
+    base_args.add_argument('--propose_method', type=str, choices=['gpt', 'glm', 'llama', 'local', 'mistral'], default='glm')
     base_args.add_argument('--value_method', type=str, choices=['gpt', 'glm', 'local'], default='local')
     base_args.add_argument('--mode', type=str, choices=['cot', 'tot', 'mcts'], default='tot')
     base_args.add_argument('--temperature', type=float, default=0.7)
@@ -114,6 +114,7 @@ def parse_args():
     base_args.add_argument('--max_depth', type=int, default=8)
     base_args.add_argument('--select_method', type=str, choices=['greedy', 'sample'], default='greedy')
     base_args.add_argument('--consistency', type=bool, default=True)
+    base_args.add_argument('--lang', type=str, choices=['zh', 'en'], default='zh')
 
     arguments = base_args.parse_args()
     return arguments

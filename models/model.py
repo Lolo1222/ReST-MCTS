@@ -22,17 +22,21 @@ BASE_MODEL_GLM = 'GLM4'
 # local model settings
 # if you want to use local models, set these two directories
 # INFERENCE_MODEL_DIR = "/workspace/ckpt/Meta-Llama-3-8B-Instruct"
-INFERENCE_MODEL_DIR = None
+INFERENCE_MODEL_DIR = "/data2/OpenLLMs/peiyi9979/mistral-7b-sft"
 LOCAL_INFERENCE_TYPES = ['glm', 'llama', 'mistral']
-LOCAL_INFERENCE_IDX = 0
+LOCAL_INFERENCE_IDX = 2
 
 # VALUE_BASE_MODEL_DIR = "/workspace/ckpt/MetaMath-Mistral-7B"
-VALUE_BASE_MODEL_DIR = None
+# VALUE_BASE_MODEL_DIR = (
+#     "/data1/home/jiawei/llmmcts/openr/hf_models/"
+# )
+VALUE_BASE_MODEL_DIR = "/data2/OpenLLMs/peiyi9979/math-shepherd-mistral-7b-prm"
+
 # VALUE_MODEL_STATE_DICT = "/Path/to/PRM/records/Mistral/VM_best_checkpoint.pt"
 VALUE_MODEL_STATE_DICT = None
 LOCAL_VALUE_TYPES = ['glm', 'mistral']
-LOCAL_VALUE_IDX = 0
-USE_PRM = False
+LOCAL_VALUE_IDX = 1
+USE_PRM = True
 
 INFERENCE_LOCAL = False
 VALUE_LOCAL = False
@@ -63,6 +67,7 @@ if VALUE_BASE_MODEL_DIR is not None:
         else:
             value_tokenizer, value_model = get_value_model_mistral(VALUE_BASE_MODEL_DIR, VALUE_MODEL_STATE_DICT)
 
+value_model.to('cuda:1')
 completion_tokens = prompt_tokens = 0
 api_key = API_KEY
 if api_key != "":
@@ -77,9 +82,9 @@ if api_base != "":
     openai.api_base = api_base
 
 
-@backoff.on_exception(backoff.expo, openai.error.OpenAIError)
+@backoff.on_exception(backoff.expo, openai.APIError)
 def completions_with_backoff(**kwargs):
-    return openai.ChatCompletion.create(**kwargs)
+    return openai.chat.completions.create(**kwargs)
 
 
 def gpt(prompt, model=BASE_MODEL_GPT, temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:

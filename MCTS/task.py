@@ -124,6 +124,21 @@ class MCTS_Task(SearchTask):
                 print(f'标准化后新的步骤:{revised_}\n')
                 return revised_ + '\n'
 
+            elif 'step' in p and ':' in p:
+                pre_len = len(p.split(':')[0])
+                p_ = p[pre_len:]
+                p_ = p_.split('step')[0].strip()
+                if len(p_) < 3:
+                    print('输出步骤过短！\n')
+                    return ''
+                if p_[1:] in y:
+                    print('输出步骤重复！\n')
+                    return ''
+
+                revised_ = '步骤' + str(step_n) + p_
+                print(f'标准化后新的步骤:{revised_}\n')
+                return revised_ + '\n'
+
             else:
                 print('输出格式有误！\n')
                 return ''
@@ -211,6 +226,21 @@ class MCTS_Task(SearchTask):
                 pre_len = len(p.split(':')[0])
                 p_ = p[pre_len:]
                 p_ = p_.split('步骤')[0].strip()
+                if len(p_) < 3:
+                    print('输出步骤过短！\n')
+                    return ''
+                if p_[1:] in y:
+                    print('输出步骤重复！\n')
+                    return ''
+
+                revised_ = '步骤' + str(step_n) + p_
+                print(f'标准化后新的步骤:{revised_}\n')
+                return revised_ + '\n'
+
+            elif 'step' in p and ':' in p:
+                pre_len = len(p.split(':')[0])
+                p_ = p[pre_len:]
+                p_ = p_.split('step')[0].strip()
                 if len(p_) < 3:
                     print('输出步骤过短！\n')
                     return ''

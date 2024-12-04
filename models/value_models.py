@@ -1,6 +1,6 @@
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
@@ -74,6 +74,8 @@ def get_value_model(base_model_dir, state_dict_file):
 def get_value_model_mistral(base_model_dir, state_dict_file):
     value_tokenizer = AutoTokenizer.from_pretrained(base_model_dir, trust_remote_code=True)
     # value_tokenizer.pad_token = value_tokenizer.eos_token
+    if value_tokenizer.pad_token is None:
+        value_tokenizer.pad_token = value_tokenizer.eos_token    
     value_base_model = AutoModelForCausalLM.from_pretrained(base_model_dir, trust_remote_code=True, torch_dtype=torch.bfloat16)
     if state_dict_file is None:
         return value_tokenizer, value_base_model
@@ -103,18 +105,37 @@ def get_value_model_prm(base_model_dir, state_dict_file):
 
 
 def get_value_model_prm_mistral(base_model_dir, state_dict_file):
-    prm_tokenizer = AutoTokenizer.from_pretrained(base_model_dir, trust_remote_code=True)
+    prm_tokenizer = AutoTokenizer.from_pretrained(
+        base_model_dir,
+        trust_remote_code=True,
+    )
+    # prm_tokenizer = AutoTokenizer.from_pretrained(
+    #     base_model_dir,
+    #     gguf_file="Qwen2.5-Math-7B-Instruct-Q6_K.gguf",
+    #     trust_remote_code=True,
+    # )
     # prm_tokenizer.pad_token = prm_tokenizer.eos_token
-    prm_base_model = AutoModelForCausalLM.from_pretrained(base_model_dir, trust_remote_code=True, torch_dtype=torch.bfloat16)
+    if prm_tokenizer.pad_token is None:
+        prm_tokenizer.pad_token = prm_tokenizer.eos_token    
+    prm_base_model = AutoModelForCausalLM.from_pretrained(
+        base_model_dir,
+        trust_remote_code=True, torch_dtype=torch.bfloat16
+    )
+    # prm_base_model = AutoModelForCausalLM.from_pretrained(
+    #     base_model_dir,
+    #     gguf_file="Qwen2.5-Math-7B-Instruct-Q6_K.gguf",
+    #     trust_remote_code=True, torch_dtype=torch.bfloat16
+    # )
+
     if state_dict_file is None:
         return prm_tokenizer, prm_base_model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("device is set to: ", device, '\n')
-    prm = Mistral_PRM(prm_base_model)
-    prm.load_state_dict(torch.load(state_dict_file))
-    prm.to(device)
-    prm.eval()
-    return prm_tokenizer, prm
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # print("device is set to: ", device, '\n')
+    # prm = Mistral_PRM(prm_base_model)
+    # prm.load_state_dict(torch.load(state_dict_file))
+    # prm.to(device)
+    # prm.eval()
+    # return prm_tokenizer, prm
 
 
 # local value model: str->digit in [low, high]
@@ -126,9 +147,11 @@ def get_local_value(prompt_answer, model, tokenizer, max_length=2048, low=0, hig
         truncation=True,
         return_tensors='pt',  # Return PyTorch Tensor format
     )
-    input_ids = encoded_pair['input_ids'].to('cuda')
+    # model.to('cuda:1')
+    model.eval()
+    input_ids = encoded_pair['input_ids'].to('cuda:1')
     # print(input_ids)
-    attention_mask = encoded_pair['attention_mask'].to('cuda')
+    attention_mask = encoded_pair['attention_mask'].to('cuda:1')
     value = model(input_ids, attention_mask).item()
     value = min(high, max(value, low))
     return value

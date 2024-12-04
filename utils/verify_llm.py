@@ -9,7 +9,7 @@ def llm_verify(ans, real_ans, judge_model='gpt-4-1106-preview'):
     while lbl == '' and cnt:
         out = ''
         try:
-            chat_comp = openai.ChatCompletion.create(model=judge_model, messages=[{"role": "user", "content": qry}])
+            chat_comp = openai.chat.completions.create(model=judge_model, messages=[{"role": "user", "content": qry}])
             out = chat_comp.choices[0].message.content[0]
         except Exception as e:
             print(f'Error:{e}\n')
