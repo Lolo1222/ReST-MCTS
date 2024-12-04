@@ -5,3 +5,4 @@ figures/
 assets/
 *.json
 *.log
+__pycache__
